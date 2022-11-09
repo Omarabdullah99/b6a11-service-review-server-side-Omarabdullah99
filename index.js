@@ -58,10 +58,11 @@ async function run(){
             const result=await reviewCollection.insertOne(review)
             res.send(result)
         })
-        //order read reviews
-        app.get('/reviews', async(req,res)=>{
-            const query={}
-            const cursor=reviewCollection.find(query)
+        // read reviews
+        app.get('/reviews/:id', async(req,res)=>{
+            const query=req.params.id
+            // console.log(query)
+            const cursor=reviewCollection.find({service:query}).sort({_id:-1})
             const reviews=await cursor.toArray()
             res.send(reviews)
         })
