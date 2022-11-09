@@ -47,9 +47,15 @@ async function run(){
         //home er data relode
         app.get('/serviceshome', async(req,res)=>{
             const query={};
-            const cursor=serviceCollection.find(query)
+            const cursor=serviceCollection.find(query).sort({_id:-1})
             const services=await cursor.limit(3).toArray()
             res.send(services)
+        })
+        //services post
+        app.post('/services',async(req,res)=>{
+            const review=req.body
+            const result=await serviceCollection.insertOne(review)
+            res.send(result)
         })
 
         //order send mongo
@@ -70,11 +76,6 @@ async function run(){
                     email: req.query.email
                 }
             }
-            // if(req.query.serviceId){
-            //     query ={
-            //         serviceId: req.query.serviceId
-            //     }
-            // }
             const cursor = reviewCollection.find(query)
             const review = await cursor.toArray()
             res.send(review)
