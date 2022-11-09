@@ -28,6 +28,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run(){
     try{
         const serviceCollection=client.db('cooking').collection('services')
+        const reviewCollection=client.db('cooking').collection('review')
 
         //all data read
         app.get('/services', async(req,res)=>{
@@ -36,21 +37,36 @@ async function run(){
             const services=await cursor.toArray()
             res.send(services)
         })
-
+         //single service
+         app.get('/services/:id', async(req,res)=>{
+            const id=req.params.id;
+            const query={_id:ObjectId(id)}
+            const service= await serviceCollection.findOne(query)
+            res.send(service)
+        })
+        //home er data relode
         app.get('/serviceshome', async(req,res)=>{
             const query={};
             const cursor=serviceCollection.find(query)
             const services=await cursor.limit(3).toArray()
             res.send(services)
         })
-        
-        //single service
-        app.get('/services/:id', async(req,res)=>{
-            const id=req.params.id;
-            const query={_id:ObjectId(id)}
-            const service= await serviceCollection.findOne(query)
-            res.send(service)
+
+        //order send mongo
+        app.post('/reviews',async(req,res)=>{
+            const review=req.body
+            const result=await reviewCollection.insertOne(review)
+            res.send(result)
         })
+        //order read reviews
+        app.get('/reviews', async(req,res)=>{
+            const query={}
+            const cursor=reviewCollection.find(query)
+            const reviews=await cursor.toArray()
+            res.send(reviews)
+        })
+        
+       
        
 
     }
