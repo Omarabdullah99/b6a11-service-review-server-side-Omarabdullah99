@@ -60,11 +60,24 @@ async function run(){
         })
 
         //all reviews read
-        app.get('/reviews', async(req,res)=>{
-            const query={};
-            const cursor=reviewCollection.find(query)
-            const reviews=await cursor.toArray()
-            res.send(reviews)
+       
+        //query parameter email address match revies reaa
+        app.get('/reviews', async(req, res)=>{
+            
+            let query = {}
+            if(req.query.email){
+                query ={
+                    email: req.query.email
+                }
+            }
+            // if(req.query.serviceId){
+            //     query ={
+            //         serviceId: req.query.serviceId
+            //     }
+            // }
+            const cursor = reviewCollection.find(query)
+            const review = await cursor.toArray()
+            res.send(review)
         })
         // read reviews by service id
         app.get('/reviews/:id', async(req,res)=>{
