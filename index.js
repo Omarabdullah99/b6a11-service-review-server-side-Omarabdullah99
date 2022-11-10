@@ -22,6 +22,22 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 //   client.close();
 // });
 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(401).send({ message: 'unauthorized access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
+
 
 
 
@@ -68,7 +84,12 @@ async function run(){
         //all reviews read
        
         //query parameter email address match revies reaa
-        app.get('/reviews', async(req, res)=>{
+        app.get('/reviews',verifyJWT, async(req, res)=>{
+            const decoded=req.decoded;
+
+            if(decoded.email !== req.query.email){
+                return res.status(403).send({message:'email mele ni'})
+            }
             
             let query = {}
             if(req.query.email){
@@ -106,7 +127,7 @@ async function run(){
         app.get('/reviews/:id', async(req,res)=>{
             const query=req.params.id
             // console.log(query)
-            const cursor=reviewCollection.find({service:query}).sort({_id:-1})
+            const cursor=reviewCollection.find({service:query}).sort({timeset:-1})
             const reviews=await cursor.toArray()
             res.send(reviews)
         })
@@ -118,6 +139,11 @@ async function run(){
             const query= {_id:ObjectId(id)}
             const result= await reviewCollection.deleteOne(query)
             res.send(result)
+        })
+        app.post('/jwt', (req,res)=>{
+            const user=req.body
+            const token=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:"7d"})
+            res.send({token})
         })
 
        
